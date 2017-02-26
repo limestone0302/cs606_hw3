@@ -12,27 +12,49 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    @ratings = params[:ratings]
-    if @ratings
-      @checked_ratings = @ratings.keys
-      if params[:title] == "sort"
-        @movies = Movie.all.where(:rating => @checked_ratings).order(:title => "ASC")
-      elsif params[:release_date] == "sort"
-        @movies = Movie.all.where(:rating => @checked_ratings).order(:release_date => "ASC")
-      else
-        @movies = Movie.all.where(:rating => @checked_ratings)
-      end
+
+    if params[:title] == "sort"
+      session[:title] = params[:title]
+      session[:release_date] = nil
+    elsif params[:release_date] == "sort"
+      session[:release_date] = params[:release_date]
+      session[:release_date] = nil
+    elsif session[:title]
+      params[:title] = session[:title]
+      session[:release_date] = nil
+       flash.keep
+      redirect_to movies_path(params) and return
+    elsif session[:release_date]
+      params[:release_date] = session[:release_date]
+      session[:title] = nil
+       flash.keep
+      redirect_to movies_path(params) and return
+    end
+    
+    sort_by_title = params[:title]
+    sort_by_release_date = params[:release_date]
+
+    if params[:ratings]
+      session[:ratings] = params[:ratings]
+      @checked_ratings = session[:ratings].keys
+    elsif session[:ratings]
+      params[:ratings] = session[:ratings]
+      @checked_ratings = session[:ratings].keys
+       flash.keep
+      redirect_to movies_path(params) and return
     else
-      if params[:title] == "sort"
-        @movies = Movie.all.order(:title => "ASC")
-      elsif params[:release_date] == "sort"
-        @movies = Movie.all.order(:release_date => "ASC")
-      else
-        @movies = Movie.all
-      end
+      @checked_ratings = @all_ratings
+    end
+    
+    if sort_by_title == "sort"
+        @movies = Movie.all.order(:title => "ASC").where(rating: @checked_ratings)
+    elsif sort_by_release_date == "sort"
+        @movies = Movie.all.order(:release_date => "ASC").where(rating: @checked_ratings)
+    else
+        @movies = Movie.all.where(rating: @checked_ratings)
     end
   end
-
+  
   def new
     # default: render 'new' template
   end
