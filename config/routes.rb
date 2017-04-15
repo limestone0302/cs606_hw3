@@ -15,7 +15,8 @@ Rails.application.routes.draw do
   #   resources :products
 
   resources :movies
-  
+  # Route that posts 'Search TMDb' form
+  post '/movies/search_tmdb'
   # Example resource route with options:
   #   resources :products do
   #     member do
